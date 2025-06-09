@@ -27,9 +27,6 @@ class GitHub_Plugin_Updater
     public function get_repo_api_url($endpoint = '')
     {
         $url = "https://api.github.com/repos/{$this->github_user}/{$this->github_repo}/$endpoint";
-        if ($this->access_token) {
-            $url = add_query_arg('access_token', $this->access_token, $url);
-        }
         return $url;
     }
 
@@ -42,7 +39,10 @@ class GitHub_Plugin_Updater
         $current_version = $plugin_data['Version'];
 
         $response = wp_remote_get($this->get_repo_api_url('releases/latest'), [
-            'headers' => ['User-Agent' => 'WordPress/' . get_bloginfo('version')]
+            'headers' => [
+                'User-Agent' => 'WordPress/' . get_bloginfo('version'),
+                'Authorization' => 'token ' . $this->access_token
+            ]
         ]);
 
         if (is_wp_error($response))

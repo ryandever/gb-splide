@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 require_once plugin_dir_path(__FILE__) . 'github-updater.php';
 
-new GitHub_Plugin_Updater(__FILE__, 'ryandever', 'gb-splide');
+new GitHub_Plugin_Updater( __FILE__, 'ryandever', 'gb-splide', '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' );
 
 function create_block_gb_splide_block_init() {
 
