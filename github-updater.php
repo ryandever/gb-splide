@@ -71,19 +71,46 @@ class GitHub_Plugin_Updater
             return false;
         }
 
-        $response = wp_remote_get($this->get_repo_api_url());
-        if (is_wp_error($response))
-            return false;
+        $release_response = wp_remote_get($this->get_repo_api_url('releases/latest'), [
+            'headers' => [
+                'User-Agent' => 'WordPress/' . get_bloginfo('version'),
+                'Authorization' => 'token ' . $this->access_token,
+            ]
+        ]);
 
-        $repo = json_decode(wp_remote_retrieve_body($response));
+        if (is_wp_error($release_response)) {
+            return false;
+        }
+
+        $release = json_decode(wp_remote_retrieve_body($release_response));
+        $version = $release->tag_name ?? '0.0.0';
+
+        $repo_response = wp_remote_get($this->get_repo_api_url(), [
+            'headers' => [
+                'User-Agent' => 'WordPress/' . get_bloginfo('version'),
+                'Authorization' => 'token ' . $this->access_token,
+            ]
+        ]);
+
+        if (is_wp_error($repo_response)) {
+            return false;
+        }
+
+        $repo = json_decode(wp_remote_retrieve_body($repo_response));
 
         return (object) [
             'name' => $repo->name,
             'slug' => $this->plugin_slug,
-            'version' => $repo->default_branch,
+            'version' => $version,
             'author' => '<a href="' . esc_url($repo->owner->html_url) . '">' . esc_html($repo->owner->login) . '</a>',
             'homepage' => $repo->homepage ?? $repo->html_url,
-            'short_description' => $repo->description,
+            'short_description' => $repo->description ?? '',
+            'sections' => [
+                'description' => $repo->description ?? '',
+            ],
+            'download_link' => $release->zipball_url ?? '',
+            'requires' => '5.0',
+            'tested' => '6.5',
         ];
     }
 }
