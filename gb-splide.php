@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       GB Splide
- * Author URI:        https://minhthe.net/
+ * Plugin URI:        https://github.com/ryandever/gb-splide
  * Description:       Slider/Carousel for GenerateBlocks
  * Version:           1.0.0
  * Requires at least: 6.7
@@ -16,6 +16,10 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+require_once plugin_dir_path(__FILE__) . 'github-updater.php';
+
+new GitHub_Plugin_Updater(__FILE__, 'ryandever', 'gb-splide');
 
 function create_block_gb_splide_block_init() {
 
