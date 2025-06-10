@@ -51,7 +51,8 @@ class GitHub_Plugin_Updater
 
     public function check_update($transient)
     {
-        if (empty($transient->checked)) return $transient;
+        if (empty($transient->checked))
+            return $transient;
 
         $plugin_data = get_plugin_data($this->plugin_file);
         $current_version = $plugin_data['Version'];
@@ -64,7 +65,8 @@ class GitHub_Plugin_Updater
             ]
         ]);
 
-        if (is_wp_error($response)) return $transient;
+        if (is_wp_error($response))
+            return $transient;
 
         $release = json_decode(wp_remote_retrieve_body($response));
 
@@ -78,7 +80,9 @@ class GitHub_Plugin_Updater
                 'plugin' => $this->plugin_slug,
                 'new_version' => $release->tag_name,
                 'url' => $release->html_url,
-                'package' => $release->assets[0]->browser_download_url,
+                'package' => !empty($release->assets[0]->browser_download_url)
+                    ? $release->assets[0]->browser_download_url
+                    : '',
             ];
         }
 
@@ -99,7 +103,8 @@ class GitHub_Plugin_Updater
             ]
         ]);
 
-        if (is_wp_error($release_response)) return false;
+        if (is_wp_error($release_response))
+            return false;
 
         $release = json_decode(wp_remote_retrieve_body($release_response));
         $version = $release->tag_name ?? '0.0.0';
@@ -113,7 +118,8 @@ class GitHub_Plugin_Updater
             ]
         ]);
 
-        if (is_wp_error($repo_response)) return false;
+        if (is_wp_error($repo_response))
+            return false;
 
         $repo = json_decode(wp_remote_retrieve_body($repo_response));
 
