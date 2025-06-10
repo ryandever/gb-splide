@@ -1,13 +1,13 @@
 <?php
 /**
  * Plugin Name:       GB Splide
- * Plugin URI:        https://github.com/ryandever/gb-splide
+ * Plugin URI:        https://minhthe.net
  * Description:       Slider/Carousel for GenerateBlocks
  * Version:           1.0.0
  * Requires at least: 6.7
  * Requires PHP:      7.4
  * Author:            MinhThe.net
- * Author URI:        https://minhthe.net/
+ * Author URI:        https://minhthe.net
  * Text Domain:       generateblocks
  *
  * @package CreateBlock
