@@ -11,11 +11,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Create zip
+      - name: Prepare plugin folder
         run: |
           mkdir gb-splide
-          cp -r * gb-splide
-          zip -r gb-splide.zip gb-splide
+          rsync -av --exclude=.git --exclude=.github --exclude=gb-splide --exclude=*.zip ./ gb-splide/
+
+      - name: Create zip
+        run: |
+          cd gb-splide
+          zip -r ../gb-splide.zip .
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
