@@ -1,0 +1,25 @@
+name: Build Plugin Zip
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Create zip
+        run: |
+          mkdir gb-splide
+          cp -r * gb-splide
+          zip -r gb-splide.zip gb-splide
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          files: gb-splide.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

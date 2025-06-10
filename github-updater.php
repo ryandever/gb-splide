@@ -22,18 +22,36 @@ class GitHub_Plugin_Updater
 
         add_filter("pre_set_site_transient_update_plugins", [$this, "check_update"]);
         add_filter("plugins_api", [$this, "plugin_info"], 10, 3);
+        add_filter("http_request_args", [$this, "add_github_auth_to_zip_download"], 10, 2);
+    }
+
+    public function add_github_auth_to_zip_download($args, $url)
+    {
+        if (
+            strpos($url, 'github.com') !== false &&
+            strpos($url, $this->github_user) !== false &&
+            strpos($url, $this->github_repo) !== false
+        ) {
+            if (!isset($args['headers'])) {
+                $args['headers'] = [];
+            }
+
+            $args['headers']['Authorization'] = 'token ' . $this->access_token;
+            $args['headers']['User-Agent'] = 'WordPress/' . get_bloginfo('version');
+            $args['headers']['Accept'] = 'application/vnd.github+json';
+        }
+
+        return $args;
     }
 
     public function get_repo_api_url($endpoint = '')
     {
-        $url = "https://api.github.com/repos/{$this->github_user}/{$this->github_repo}/$endpoint";
-        return $url;
+        return "https://api.github.com/repos/{$this->github_user}/{$this->github_repo}/$endpoint";
     }
 
     public function check_update($transient)
     {
-        if (empty($transient->checked))
-            return $transient;
+        if (empty($transient->checked)) return $transient;
 
         $plugin_data = get_plugin_data($this->plugin_file);
         $current_version = $plugin_data['Version'];
@@ -41,25 +59,27 @@ class GitHub_Plugin_Updater
         $response = wp_remote_get($this->get_repo_api_url('releases/latest'), [
             'headers' => [
                 'User-Agent' => 'WordPress/' . get_bloginfo('version'),
-                'Authorization' => 'token ' . $this->access_token
+                'Authorization' => 'token ' . $this->access_token,
+                'Accept' => 'application/vnd.github+json',
             ]
         ]);
 
-        if (is_wp_error($response))
-            return $transient;
+        if (is_wp_error($response)) return $transient;
 
         $release = json_decode(wp_remote_retrieve_body($response));
 
-        if (!empty($release->tag_name) && is_string($release->tag_name)) {
-            if (version_compare($current_version, $release->tag_name, '<')) {
-                $transient->response[$this->plugin_slug] = (object) [
-                    'slug' => $this->plugin_slug,
-                    'plugin' => $this->plugin_slug,
-                    'new_version' => $release->tag_name,
-                    'url' => $release->html_url,
-                    'package' => $release->zipball_url,
-                ];
-            }
+        if (
+            !empty($release->tag_name)
+            && version_compare($current_version, $release->tag_name, '<')
+            && !empty($release->assets[0]->browser_download_url)
+        ) {
+            $transient->response[$this->plugin_slug] = (object) [
+                'slug' => $this->plugin_slug,
+                'plugin' => $this->plugin_slug,
+                'new_version' => $release->tag_name,
+                'url' => $release->html_url,
+                'package' => $release->assets[0]->browser_download_url,
+            ];
         }
 
         return $transient;
@@ -75,26 +95,25 @@ class GitHub_Plugin_Updater
             'headers' => [
                 'User-Agent' => 'WordPress/' . get_bloginfo('version'),
                 'Authorization' => 'token ' . $this->access_token,
+                'Accept' => 'application/vnd.github+json',
             ]
         ]);
 
-        if (is_wp_error($release_response)) {
-            return false;
-        }
+        if (is_wp_error($release_response)) return false;
 
         $release = json_decode(wp_remote_retrieve_body($release_response));
         $version = $release->tag_name ?? '0.0.0';
+        $download_link = $release->assets[0]->browser_download_url ?? '';
 
         $repo_response = wp_remote_get($this->get_repo_api_url(), [
             'headers' => [
                 'User-Agent' => 'WordPress/' . get_bloginfo('version'),
                 'Authorization' => 'token ' . $this->access_token,
+                'Accept' => 'application/vnd.github+json',
             ]
         ]);
 
-        if (is_wp_error($repo_response)) {
-            return false;
-        }
+        if (is_wp_error($repo_response)) return false;
 
         $repo = json_decode(wp_remote_retrieve_body($repo_response));
 
@@ -108,7 +127,7 @@ class GitHub_Plugin_Updater
             'sections' => [
                 'description' => $repo->description ?? '',
             ],
-            'download_link' => $release->zipball_url ?? '',
+            'download_link' => $download_link,
             'requires' => '5.0',
             'tested' => '6.5',
         ];
