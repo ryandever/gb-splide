@@ -11,20 +11,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Prepare plugin folder
         run: |
-          mkdir gb-splide
-          rsync -av --exclude=.git --exclude=.github --exclude=*.zip ./ gb-splide/
+          PLUGIN_SLUG="cloudtable"
+          BUILD_DIR="build"
 
-      - name: Create zip
+          # Tạo thư mục tạm để build
+          mkdir -p $BUILD_DIR/$PLUGIN_SLUG
+
+          # Đồng bộ toàn bộ source code (trừ những thứ không cần thiết)
+          rsync -av \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=*.zip \
+            --exclude=$BUILD_DIR \
+            ./ $BUILD_DIR/$PLUGIN_SLUG/
+
+      - name: Create zip with plugin folder inside
         run: |
-          cd gb-splide
-          zip -r ../gb-splide.zip .
+          cd build
+          zip -r ../cloudtable.zip cloudtable
 
-      - name: Upload release asset
+      - name: Upload release asset to GitHub
         uses: softprops/action-gh-release@v1
         with:
-          files: gb-splide.zip
+          files: cloudtable.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

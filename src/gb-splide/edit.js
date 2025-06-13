@@ -59,7 +59,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
     const newSlide = () => {
         const image = createBlock(
-            'generateblocks/image',
+            'generateblocks/media',
             {
                 uniqueId: generateId()
             }
