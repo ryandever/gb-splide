@@ -27,7 +27,6 @@ jobs:
             --exclude=.git \
             --exclude=.github \
             --exclude=*.zip \
-            --exclude=$BUILD_DIR \
             ./ $BUILD_DIR/$PLUGIN_SLUG/
 
       - name: Create zip with plugin folder inside
