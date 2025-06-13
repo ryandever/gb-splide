@@ -16,7 +16,7 @@ jobs:
 
       - name: Prepare plugin folder
         run: |
-          PLUGIN_SLUG="cloudtable"
+          PLUGIN_SLUG="gb-splide"
           BUILD_DIR="build"
 
           # Tạo thư mục tạm để build
@@ -33,11 +33,11 @@ jobs:
       - name: Create zip with plugin folder inside
         run: |
           cd build
-          zip -r ../cloudtable.zip cloudtable
+          zip -r ../gb-splide.zip gb-splide
 
       - name: Upload release asset to GitHub
         uses: softprops/action-gh-release@v1
         with:
-          files: cloudtable.zip
+          files: gb-splide.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
